@@ -190,7 +190,7 @@ export default function Page() {
               style={{ borderColor: "rgba(255,255,255,.10)" }}
               aria-label="History (mock)"
               title="History (mock)"
-              onClick={() => alert("export data and generate submmery")}
+              onClick={() => alert("export data and generate summary")}
             >
               📅
             </button>
