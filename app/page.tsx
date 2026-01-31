@@ -41,9 +41,7 @@ function uid() {
  * We map them into Tailwind with inline styles on the root container.
  */
 const themeVars: React.CSSProperties = {
-  // @ts-ignore
   background: "var(--tg-theme-bg-color, #0B0F14)",
-  // @ts-ignore
   color: "var(--tg-theme-text-color, #E5E7EB)",
 };
 
@@ -164,7 +162,6 @@ export default function Page() {
           <div
             className="absolute inset-0 -z-10"
             style={{
-              // @ts-ignore
               background:
                 "linear-gradient(to bottom, var(--tg-theme-bg-color, #0B0F14) 70%, rgba(0,0,0,0))",
             }}
@@ -369,7 +366,6 @@ function SurfaceCard({
         className,
       ].join(" ")}
       style={{
-        // @ts-ignore
         background: "var(--tg-theme-secondary-bg-color, #111827)",
         borderColor: "rgba(255,255,255,.10)",
       }}
@@ -481,9 +477,7 @@ function PrimaryButton({
       onClick={onClick}
       className="w-full rounded-[14px] px-4 py-3 text-sm font-extrabold active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
       style={{
-        // @ts-ignore
         background: "var(--tg-theme-button-color, #3B82F6)",
-        // @ts-ignore
         color: "var(--tg-theme-button-text-color, #FFFFFF)",
       }}
     >
@@ -614,7 +608,6 @@ function BottomSheet({
       <div
         className="w-full max-w-[520px] rounded-t-[18px] border p-4 shadow-[0_10px_30px_rgba(0,0,0,.35)]"
         style={{
-          // @ts-ignore
           background: "var(--tg-theme-secondary-bg-color, #111827)",
           borderColor: "rgba(255,255,255,.10)",
         }}
