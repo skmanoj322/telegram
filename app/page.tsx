@@ -128,8 +128,8 @@ export default function Page() {
               set: Math.max(1, editSet),
               reps: Math.max(1, editReps),
             }
-          : e
-      )
+          : e,
+      ),
     );
     setEditOpen(false);
     setEditingId(null);
@@ -237,9 +237,11 @@ export default function Page() {
             </div>
           </div>
 
-          <PrimaryButton disabled={!canAdd} onClick={addEntry}>
-            Add Entry
-          </PrimaryButton>
+          <div className="mt-4">
+            <PrimaryButton disabled={!canAdd} onClick={addEntry}>
+              Add Entry
+            </PrimaryButton>
+          </div>
         </SurfaceCard>
 
         {/* Entries */}
@@ -310,8 +312,9 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <GhostButton onClick={() => setEditOpen(false)}>Cancel</GhostButton>
+
             <PrimaryButton
               onClick={saveEdit}
               disabled={editExercise.trim().length === 0}
@@ -338,7 +341,7 @@ export default function Page() {
               : "This entry will be removed."}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 ">
             <GhostButton onClick={() => setDeleteOpen(false)}>
               Cancel
             </GhostButton>
@@ -476,7 +479,7 @@ function PrimaryButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="mt-4 w-full rounded-[14px] px-4 py-3 text-sm font-extrabold active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-[14px] px-4 py-3 text-sm font-extrabold active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
       style={{
         // @ts-ignore
         background: "var(--tg-theme-button-color, #3B82F6)",
