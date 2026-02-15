@@ -83,7 +83,7 @@ export default function Page() {
 
   const testAuth = () => {
     fetch("https://2492-203-192-253-246.ngrok-free.app/new", {
-      method: "POST",
+      method: "GET",
       headers: {
         Authorization: `tma ${initData}`,
       },
@@ -260,9 +260,7 @@ export default function Page() {
           </div>
 
           <div className="mt-4">
-            <PrimaryButton disabled={!canAdd} onClick={testAuth}>
-              Add Entry
-            </PrimaryButton>
+            <PrimaryButton onClick={testAuth}>Add Entrys</PrimaryButton>
           </div>
         </SurfaceCard>
 
