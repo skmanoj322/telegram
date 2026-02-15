@@ -67,19 +67,6 @@ export default function Page() {
   const todayLabel = useMemo(() => fmtTodayLabel(), []);
 
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
-  useEffect(() => {
-    try {
-      const lp = retrieveLaunchParams();
-      setInitData(lp);
-      console.log("Launch params:", lp);
-    } catch (err) {
-      console.warn(
-        "Not running inside Telegram, launch params unavailable:",
-        err,
-      );
-      setInitData(null);
-    }
-  }, []);
 
   const testAuth = async () => {
     if (!initData) {
@@ -88,6 +75,7 @@ export default function Page() {
     }
 
     try {
+      const { initDataRaw } = retrieveLaunchParams();
       const response = await fetch(
         "https://2492-203-192-253-246.ngrok-free.app/new",
         {
@@ -95,7 +83,7 @@ export default function Page() {
           // Add 'mode' to ensure the browser handles the CORS preflight properly
           mode: "cors",
           headers: {
-            Authorization: `tma ${initData}`,
+            Authorization: `tma ${initDataRaw}`,
             "Content-Type": "application/json",
             "ngrok-skip-browser-warning": "true",
           },
