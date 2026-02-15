@@ -69,10 +69,11 @@ export default function Page() {
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
   const testAuth = async () => {
+    // Use initDataRaw instead of the initData object
     const { initDataRaw } = retrieveLaunchParams();
 
-    if (!initData) {
-      console.error("❌ No initData found. Authentication will fail.");
+    if (!initDataRaw) {
+      console.error("❌ No initDataRaw found.");
       return;
     }
 
@@ -81,9 +82,9 @@ export default function Page() {
         "https://2492-203-192-253-246.ngrok-free.app/new",
         {
           method: "GET",
-          // Add 'mode' to ensure the browser handles the CORS preflight properly
           mode: "cors",
           headers: {
+            // Send the raw string
             Authorization: `tma ${initDataRaw}`,
             "Content-Type": "application/json",
             "ngrok-skip-browser-warning": "true",
@@ -91,17 +92,10 @@ export default function Page() {
         },
       );
 
-      if (response.ok) {
-        const data = await response.text();
-        console.log("✅ Backend says:", data);
-      } else {
-        console.error(
-          `❌ Server returned ${response.status}:`,
-          await response.text(),
-        );
-      }
+      const data = await response.text();
+      console.log("✅ Backend says:", data);
     } catch (err) {
-      console.error("🚀 Network Error (check ngrok/CORS):", err);
+      console.error("🚀 Network Error:", err);
     }
   };
 
