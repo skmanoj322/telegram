@@ -64,15 +64,24 @@ export default function Page() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  useEffect(() => {
+    try {
+      const lp = retrieveLaunchParams();
+      setInitData(lp);
+
+      // Access the raw string. It's guaranteed to be there if the app
+      // launched correctly in Telegram.
+    } catch (err) {
+      console.error("Failed to retrieve launch params", err);
+    }
+  }, []);
+
   const todayLabel = useMemo(() => fmtTodayLabel(), []);
 
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
   const testAuth = async () => {
-    // Use initDataRaw instead of the initData object
-    const { initDataRaw } = retrieveLaunchParams();
-
-    if (!initDataRaw) {
+    if (!initData.tgWebAppData) {
       console.error("❌ No initDataRaw found.");
       return;
     }
@@ -85,7 +94,7 @@ export default function Page() {
           mode: "cors",
           headers: {
             // Send the raw string
-            Authorization: `tma ${initDataRaw}`,
+            Authorization: `tma ${initData.tgWebAppData}`,
             "Content-Type": "application/json",
             "ngrok-skip-browser-warning": "true",
           },
