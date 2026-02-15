@@ -81,13 +81,38 @@ export default function Page() {
     }
   }, []);
 
-  const testAuth = () => {
-    fetch("https://2492-203-192-253-246.ngrok-free.app/new", {
-      method: "GET",
-      headers: {
-        Authorization: `tma ${initData}`,
-      },
-    });
+  const testAuth = async () => {
+    if (!initData) {
+      console.error("❌ No initData found. Authentication will fail.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "https://2492-203-192-253-246.ngrok-free.app/new",
+        {
+          method: "GET",
+          // Add 'mode' to ensure the browser handles the CORS preflight properly
+          mode: "cors",
+          headers: {
+            Authorization: `tma ${initData}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.text();
+        console.log("✅ Backend says:", data);
+      } else {
+        console.error(
+          `❌ Server returned ${response.status}:`,
+          await response.text(),
+        );
+      }
+    } catch (err) {
+      console.error("🚀 Network Error (check ngrok/CORS):", err);
+    }
   };
 
   const exerciseChips = [
