@@ -97,6 +97,7 @@ export default function Page() {
           headers: {
             Authorization: `tma ${initData}`,
             "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
           },
         },
       );
