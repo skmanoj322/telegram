@@ -69,13 +69,14 @@ export default function Page() {
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
   const testAuth = async () => {
+    const { initDataRaw } = retrieveLaunchParams();
+
     if (!initData) {
       console.error("❌ No initData found. Authentication will fail.");
       return;
     }
 
     try {
-      const { initDataRaw } = retrieveLaunchParams();
       const response = await fetch(
         "https://2492-203-192-253-246.ngrok-free.app/new",
         {
