@@ -5,7 +5,8 @@
 
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { retrieveLaunchParams } from "@tma.js/sdk";
 
 type Entry = {
   id: string;
@@ -50,6 +51,7 @@ export default function Page() {
   const [setNum, setSetNum] = useState(1);
   const [reps, setReps] = useState(10);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [initData, setInitData] = useState<any>(null);
 
   // Edit sheet state
   const [editOpen, setEditOpen] = useState(false);
@@ -65,6 +67,28 @@ export default function Page() {
   const todayLabel = useMemo(() => fmtTodayLabel(), []);
 
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
+  useEffect(() => {
+    try {
+      const lp = retrieveLaunchParams();
+      setInitData(lp);
+      console.log("Launch params:", lp);
+    } catch (err) {
+      console.warn(
+        "Not running inside Telegram, launch params unavailable:",
+        err,
+      );
+      setInitData(null);
+    }
+  }, []);
+
+  const testAuth = () => {
+    fetch("https://2492-203-192-253-246.ngrok-free.app/new", {
+      method: "POST",
+      headers: {
+        Authorization: `tma ${initData}`,
+      },
+    });
+  };
 
   const exerciseChips = [
     "Bench Press",
@@ -149,6 +173,7 @@ export default function Page() {
     ? entries.find((e) => e.id === deletingId)
     : null;
 
+  console.log("INITDATA", initData);
   return (
     <main style={themeVars} className="min-h-screen">
       <div
@@ -235,7 +260,7 @@ export default function Page() {
           </div>
 
           <div className="mt-4">
-            <PrimaryButton disabled={!canAdd} onClick={addEntry}>
+            <PrimaryButton disabled={!canAdd} onClick={testAuth}>
               Add Entry
             </PrimaryButton>
           </div>
