@@ -6,7 +6,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { retrieveLaunchParams } from "@tma.js/sdk";
+import { retrieveLaunchParams, retrieveRawInitData } from "@tma.js/sdk";
 
 type Entry = {
   id: string;
@@ -66,7 +66,7 @@ export default function Page() {
 
   useEffect(() => {
     try {
-      const lp = retrieveLaunchParams();
+      const lp = retrieveRawInitData();
       setInitData(lp);
 
       // Access the raw string. It's guaranteed to be there if the app
@@ -81,7 +81,7 @@ export default function Page() {
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
   const testAuth = async () => {
-    if (!initData.tgWebAppData) {
+    if (!initData) {
       console.error("❌ No initDataRaw found.");
       return;
     }
@@ -94,7 +94,7 @@ export default function Page() {
           mode: "cors",
           headers: {
             // Send the raw string
-            Authorization: `tma ${initData.tgWebAppData}`,
+            Authorization: `tma ${initData}`,
             "Content-Type": "application/json",
             "ngrok-skip-browser-warning": "true",
           },
