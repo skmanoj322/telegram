@@ -278,7 +278,7 @@ export default function Page() {
           </div>
 
           <div className="mt-4">
-            <PrimaryButton onClick={testAuth}>Add Entrys</PrimaryButton>
+            <PrimaryButton onClick={addEntry}>Add Entry</PrimaryButton>
           </div>
         </SurfaceCard>
 
