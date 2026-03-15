@@ -1,13 +1,15 @@
-import { deviceStorage, DeviceStorage, init, retrieveRawInitData } from "@tma.js/sdk";
+import { deviceStorage} from "@tma.js/sdk";
 
 
-init();
 
-const BASE_URL=process.env.NEXT_PUBLIC_API_URL??"http://localhost:8000";
+export const BASE_URL=process.env.NEXT_PUBLIC_API_URL??"http://localhost:8000";
 
 
-async function refreshToken():Promise<boolean>{
-    const initData=retrieveRawInitData();
+export let initData:string=""
+export const setInitData = (data: string) => {
+    initData = data;
+  };
+export async function refreshToken():Promise<boolean>{
 
     // const initData="query_id=AAEijLVtAwAAACKMtW28vyGc&user=%7B%22id%22%3A8283065378%2C%22first_name%22%3A%22Manoj%22%2C%22last_name%22%3A%22Sk%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FqfwLS-dj04hfGa5iSPrdnRcb8znV7vdGlQidQuo8B_fBfvmNZOELNfFNzmi3r6JX.svg%22%7D&auth_date=1772602505&signature=i5yfAoYyxrwvi1Zh2ctZ_Ar4HHZn1QaFYCWk2Se4Zkz3e0admJRS-5YvmTGGiD4zglthGn7DJoGl8Zalg0STCg&hash=e6cef50295f3698d242f36c43414c7c6061ad63d733e172c209365f6898b2b81"
     if (initData==undefined){
@@ -57,7 +59,7 @@ export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):P
     for(let i=0;i<retries;i++){
         const res=await fetch(`${BASE_URL}${url}`,{
             ...options,
-            headers:await getHeaders(),
+            headers:await getHeaders(initData),
         })
 
         try{
@@ -83,12 +85,16 @@ export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):P
 
 
 
-async function getHeaders(): Promise<HeadersInit> {
+async function getHeaders(initData?:string): Promise<HeadersInit> {
     let  token = await  deviceStorage.getItem("token")
 
     // let token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoie1wiaWRcIjo4MjgzMDY1Mzc4LFwiZmlyc3RfbmFtZVwiOlwiTWFub2pcIixcImxhc3RfbmFtZVwiOlwiU2tcIixcInVzZXJfbmFtZVwiOm51bGx9IiwiZXhwIjoxNzczNjQ0MjA1LCJpYXQiOjE3NzM1NTc4MDV9.QqtS-NTY6krCF6zCtRZ3uySUYvvzuBkNU58lInzIcxk"
     if (token===null){
-       const sucess= await refreshToken()
+        let sucess
+        if (initData){
+            sucess= await refreshToken()
+        }
+       
        if (sucess){
         token= await deviceStorage.getItem("token")
        }

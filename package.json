@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tma.js/sdk": "^3.1.6",
+    "@tma.js/sdk-react": "^3.0.16",
     "next": "15.5.7",
     "react": "19.0.0",
     "react-dom": "19.0.0"
