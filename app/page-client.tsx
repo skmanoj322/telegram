@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
-import { BASE_URL, fetchWithRetry, get, initData, post, setInitData } from "./lib/api";
+import { BASE_URL, fetchWithRetry, get, initData, post, refreshToken, setInitData } from "./lib/api";
 import { useRawInitData } from "@tma.js/sdk-react";
 import { url } from "inspector";
 
@@ -109,9 +109,11 @@ export default function Page() {
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
 
-  useEffect(() => {
+  useEffect(() => {  
     if(initData!=="") return
-    if (rawInitData) setInitData(rawInitData);  // ✅ inject once on load
+    if (rawInitData) setInitData(rawInitData);// ✅ inject once on load
+    console.log(rawInitData)
+    refreshToken();
   }, [rawInitData]);
 
   useEffect(()=>{
@@ -123,6 +125,8 @@ const getSession =async()=>{
 
   
   const  response= await get<GetLogResponse>("/getSession")
+
+  console.log(response.data)
   setEntries(response.data)
 }
 getSession();
