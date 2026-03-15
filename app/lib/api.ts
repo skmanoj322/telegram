@@ -30,7 +30,11 @@ export async function refreshToken():Promise<boolean>{
 
         const data:auth=await response.json();
 
+        console.log("RE_FRESH from refresh function",data)
+
         await deviceStorage.setItem("token",data.token);
+
+
         return true
 
     }catch(err){
@@ -56,6 +60,8 @@ const handleResponse=async<T>(response:Response):Promise<T>=>{
 export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):Promise<T>=>{
     let lastError:ApiError|null=null;
 
+    console.log("Token from fetchWithRetry",await deviceStorage.getItem("token"))
+
     for(let i=0;i<retries;i++){
         const res=await fetch(`${BASE_URL}${url}`,{
             ...options,
@@ -71,6 +77,8 @@ export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):P
             if(!error.isUnauthorized) throw error;
 
             const refreshed=await refreshToken();
+
+            console.log("REFRESHED",refreshToken)
             if (!refreshed) throw error;
 
         }
