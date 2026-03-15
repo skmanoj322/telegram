@@ -5,15 +5,19 @@
 
 "use client";
 
+import { Timestamp } from "next/dist/server/lib/cache-handlers/types";
 import React, { useEffect, useMemo, useState } from "react";
-import { retrieveLaunchParams, retrieveRawInitData } from "@tma.js/sdk";
+import { get, post } from "./lib/api";
+import { error } from "console";
 
 type Entry = {
-  id: string;
-  exercise: string;
+  id?: number;
+  name: string;
   set: number;
-  reps: number;
-  time: string; // display time
+  rep: number;
+  completed_at?: string; // display time
+  weight_kg:string,
+  user_id?:number,
 };
 
 function fmtTodayLabel() {
@@ -25,10 +29,6 @@ function fmtTodayLabel() {
   return `Today • ${fmt}`;
 }
 
-function uid() {
-  // simple id; replace with crypto.randomUUID() if you want
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
 
 /**
  * Telegram theme variables (used if running inside Telegram)
@@ -46,68 +46,82 @@ const themeVars: React.CSSProperties = {
   color: "var(--tg-theme-text-color, #E5E7EB)",
 };
 
+interface AddLogRequest{
+  name:string,
+  weight_kg:string,
+  set:number,
+  rep:number
+}
+
+interface AddLogResponse{
+  status:number,
+  data:WorkoutLog
+}
+
+interface WorkoutLog{
+  completed_at?:string,
+  id?:number,
+  name:string,
+  rep:number,
+  set:number,
+  user_id?:number,
+  weight_kg:string
+}
+interface GetLogResponse{
+status:number,
+data:WorkoutLog[]
+} 
+
+
+
+interface EditLogRequest{
+  id:number,
+  name?:string,
+  weight_kg?:string,
+  set?:number,
+  rep?:number,
+
+}
+
+interface DeleteRequest{
+  id:number
+}
+
+
+
 export default function Page() {
   const [exercise, setExercise] = useState("");
   const [setNum, setSetNum] = useState(1);
   const [reps, setReps] = useState(10);
   const [entries, setEntries] = useState<Entry[]>([]);
-  const [initData, setInitData] = useState<any>(null);
-
   // Edit sheet state
   const [editOpen, setEditOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editExercise, setEditExercise] = useState("");
   const [editSet, setEditSet] = useState(1);
   const [editReps, setEditReps] = useState(10);
 
   // Delete confirm state
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const lp = retrieveRawInitData();
-      setInitData(lp);
-
-      // Access the raw string. It's guaranteed to be there if the app
-      // launched correctly in Telegram.
-    } catch (err) {
-      console.error("Failed to retrieve launch params", err);
-    }
-  }, []);
-
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const todayLabel = useMemo(() => fmtTodayLabel(), []);
+
+  const [weightKg,setWeightKg]=useState<string|"">("")
 
   const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
 
-  const testAuth = async () => {
-    if (!initData) {
-      console.error("❌ No initDataRaw found.");
-      return;
-    }
 
-    try {
-      const response = await fetch(
-        "https://2492-203-192-253-246.ngrok-free.app/new",
-        {
-          method: "GET",
-          mode: "cors",
-          headers: {
-            // Send the raw string
-            Authorization: `tma ${initData}`,
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-        },
-      );
 
-      const data = await response.text();
-      console.log("✅ Backend says:", data);
-    } catch (err) {
-      console.error("🚀 Network Error:", err);
-    }
-  };
 
+  useEffect(()=>{
+
+
+const getSession =async()=>{
+  const  response= await get<GetLogResponse>("/getSession")
+  setEntries(response.data)
+}
+getSession();
+  },[])
   const exerciseChips = [
     "Bench Press",
     "Squat",
@@ -116,57 +130,90 @@ export default function Page() {
     "Shoulder Press",
   ];
 
-  function addEntry() {
+ async function addEntry() {
     if (!canAdd) return;
 
-    const ex = exercise.trim();
+    const name = exercise.trim();
     const now = new Date();
-    const time = now.toLocaleTimeString(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  
+    const id=Date.now()
 
     const newEntry: Entry = {
-      id: uid(),
-      exercise: ex,
-      set: setNum,
-      reps,
-      time,
+      id,
+      name,
+      set:setNum,
+      rep:reps,
+      weight_kg:weightKg
     };
-    setEntries((prev) => [newEntry, ...prev]);
 
-    // small pro UX: if previous entry is same exercise, auto increment set
-    const prev = entries[0];
-    if (prev && prev.exercise === ex) setSetNum((s) => s + 1);
-    else setSetNum(1);
 
+    setEntries(prev => [...prev, newEntry]);
+
+    // setEntries((prev)=>[newEntry,...prev,]);
+
+    const res= await post<AddLogRequest,AddLogResponse>("/add",{
+      name,
+      set:setNum,
+      rep:reps,
+      weight_kg:weightKg
+    })
+
+    console.log("res",res)
+
+    setEntries((prev)=> prev.map((entrie)=>
+      entrie.id===id?{...entrie,id:res.data.id}:entrie
+      ))
     // keep reps; clear exercise for quick logging
     setExercise("");
   }
 
-  function openEdit(id: string) {
+  function openEdit(id: number|undefined) {
+
+    if (id===undefined){
+      return
+    }
+
+   
     const e = entries.find((x) => x.id === id);
     if (!e) return;
     setEditingId(id);
-    setEditExercise(e.exercise);
+    setEditExercise(e.name);
     setEditSet(e.set);
-    setEditReps(e.reps);
+    setEditReps(e.rep);
+    setWeightKg(e.weight_kg)
     setEditOpen(true);
   }
 
-  function saveEdit() {
+  
+
+  async function saveEdit() {
     if (!editingId) return;
     const ex = editExercise.trim();
+    const isExistID=entries.some(val=>val.id===editingId)
+
     if (!ex) return;
+    if (editSet<1) return;
+    if (editReps<1) return;
+    if(!isExistID) return;
+    if(weightKg==="") return
+
+    await post<EditLogRequest,{status:number,data:WorkoutLog}>("/edit",{
+      id:editingId,
+      name:ex,
+      set:editSet,
+      rep:editReps,
+      weight_kg:weightKg
+    })
 
     setEntries((prev) =>
       prev.map((e) =>
         e.id === editingId
           ? {
               ...e,
-              exercise: ex,
-              set: Math.max(1, editSet),
-              reps: Math.max(1, editReps),
+              name: ex,
+              set: editSet,
+              rep:  editReps,
+              weight_kg:weightKg
             }
           : e,
       ),
@@ -175,23 +222,35 @@ export default function Page() {
     setEditingId(null);
   }
 
-  function openDelete(id: string) {
+  function openDelete(id: number|undefined) {
+
+    if (id===undefined){
+      return
+    }
     setDeletingId(id);
     setDeleteOpen(true);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!deletingId) return;
-    setEntries((prev) => prev.filter((e) => e.id !== deletingId));
-    setDeleteOpen(false);
-    setDeletingId(null);
+    const res= await post<DeleteRequest,{status:number,data:WorkoutLog}>("/delete",{id:deletingId})
+      setEntries((prev) => prev.filter((e) => e.id !== deletingId));
+      setDeleteOpen(false);
+      setDeletingId(null);
+  
   }
 
   const deletingEntry = deletingId
     ? entries.find((e) => e.id === deletingId)
     : null;
 
-  console.log("INITDATA", initData);
+   const  summaryGenerator=async()=>{
+
+   const res= await get("/sendMessage")
+   console.log(res)
+   }
+
+
   return (
     <main style={themeVars} className="min-h-screen">
       <div
@@ -233,7 +292,10 @@ export default function Page() {
               style={{ borderColor: "rgba(255,255,255,.10)" }}
               aria-label="History (mock)"
               title="History (mock)"
-              onClick={() => alert("export data and generate summary")}
+              onClick={() =>{alert("export data and generate summary")
+
+                summaryGenerator()
+              }}
             >
               📅
             </button>
@@ -256,6 +318,17 @@ export default function Page() {
               ))}
             </div>
           </div>
+          <div className="mt-4">
+            <Label>Weight</Label>
+            <Input
+              type="number"
+              min={0.1}
+              value={weightKg}
+              onChange={(e) => {
+                setWeightKg(e.target.value)}}
+              placeholder="Weight"
+            />
+          </div>
 
           <div className="mt-4 flex gap-3">
             <div className="flex-1">
@@ -275,6 +348,7 @@ export default function Page() {
                 onInc={() => setReps((v) => v + 1)}
               />
             </div>
+           
           </div>
 
           <div className="mt-4">
@@ -305,7 +379,7 @@ export default function Page() {
             <div className="flex flex-col gap-2">
               {entries.map((e) => (
                 <EntryRow
-                  key={e.id}
+                  key={e?.id}
                   entry={e}
                   onEdit={() => openEdit(e.id)}
                   onDelete={() => openDelete(e.id)}
@@ -328,6 +402,17 @@ export default function Page() {
             <Input
               value={editExercise}
               onChange={(e) => setEditExercise(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label>Weight</Label>
+            <Input
+              type="number"
+              min={0.1}
+              value={weightKg}
+              onChange={(e) => {
+                setWeightKg(e.target.value)}}
             />
           </div>
 
@@ -375,7 +460,7 @@ export default function Page() {
             style={{ color: "var(--tg-theme-hint-color, #9CA3AF)" }}
           >
             {deletingEntry
-              ? `${deletingEntry.exercise} • Set ${deletingEntry.set} • Reps ${deletingEntry.reps}`
+              ? `${deletingEntry.name} • Set ${deletingEntry.set} • Reps ${deletingEntry.rep}`
               : "This entry will be removed."}
           </div>
 
@@ -583,12 +668,12 @@ function EntryRow({
       }}
     >
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-extrabold">{entry.exercise}</div>
+        <div className="truncate text-sm font-extrabold">{entry.name}</div>
         <div
           className="mt-1 text-[13px]"
           style={{ color: "var(--tg-theme-hint-color, #9CA3AF)" }}
         >
-          Set {entry.set} • Reps {entry.reps} • {entry.time}
+          Set {entry.set} • Reps {entry.rep} • {entry.completed_at? new Date(entry.completed_at).toLocaleTimeString("en-us",{ hour: "2-digit",minute: "2-digit",hour12: true,}):"now"} 
         </div>
       </div>
 

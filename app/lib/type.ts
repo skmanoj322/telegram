@@ -1,0 +1,4 @@
+interface auth{
+
+    token:string
+}
