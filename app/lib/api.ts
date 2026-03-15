@@ -1,9 +1,9 @@
-import { deviceStorage} from "@tma.js/sdk";
+import { deviceStorage, init} from "@tma.js/sdk";
 
 
 
 export const BASE_URL=process.env.NEXT_PUBLIC_API_URL??"http://localhost:8000";
-
+init()
 
 export let initData:string=""
 export const setInitData = (data: string) => {
