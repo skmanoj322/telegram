@@ -1,6 +1,7 @@
-import { deviceStorage, DeviceStorage, retrieveRawInitData } from "@tma.js/sdk";
+import { deviceStorage, DeviceStorage, init, retrieveRawInitData } from "@tma.js/sdk";
 
 
+init();
 
 const BASE_URL=process.env.NEXT_PUBLIC_API_URL??"http://localhost:8000";
 
