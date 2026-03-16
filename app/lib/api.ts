@@ -20,8 +20,9 @@ export async function refreshToken():Promise<boolean>{
 
         const response= await fetch(`${BASE_URL}/auth/telegram`,{
             method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ initData: initData })
+            headers:{"Content-Type":"application/json",
+                "Authorization": `tma ${initData}`,
+            },
         });
 
         if (!response.ok){
