@@ -112,18 +112,10 @@ export default function Page() {
   useEffect(() => {  
     if(initData!=="") return
     if (rawInitData) setInitData(rawInitData);// ✅ inject once on load
-    console.log("RAWINIT DATA",rawInitData)
     refreshToken();
   }, [rawInitData]);
 
   useEffect(()=>{
-
-
-    if(initData!=="") return
-    if (rawInitData) setInitData(rawInitData);// ✅ inject once on load
-    console.log("RAWINIT DATA from main",rawInitData)
-    refreshToken();
-
 const getSession =async()=>{
 
   
@@ -259,7 +251,6 @@ getSession();
    const  summaryGenerator=async()=>{
 
    const res= await get("/sendMessage")
-   console.log(res)
    }
 
 
