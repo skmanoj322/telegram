@@ -162,7 +162,6 @@ getSession();
       weight_kg:weightKg
     };
 
-    setEntries(prev => [...prev, newEntry]);
     setLoading(true);
     try {
       const res= await post<AddLogRequest,AddLogResponse>("/add",{
@@ -171,6 +170,7 @@ getSession();
         rep:reps,
         weight_kg:weightKg
       })
+      setEntries(prev => [...prev, newEntry]);
       setEntries((prev)=> prev.map((entrie)=>
         entrie.id===id?{...entrie,id:res.data.id}:entrie
       ))
