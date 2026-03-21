@@ -176,7 +176,7 @@ getSession();
 
   function openEdit(id: number|undefined) {
 
-    console.log("EDIT ENTRIES")
+    console.log("EDIT ENTRIES",id)
 
     if (id===undefined){
       return
