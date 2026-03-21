@@ -108,7 +108,7 @@ export default function Page() {
   const rawInitData = useRawInitData();
 
 
-  const canAdd = exercise.trim().length > 0 && setNum >= 1 && reps >= 1;
+  const canAdd = exercise.trim().length > 0 && weightKg.trim().length > 0 && setNum >= 1 && reps >= 1;
 
 
   useEffect(() => {  
