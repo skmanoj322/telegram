@@ -198,7 +198,11 @@ getSession();
     const ex = editExercise.trim();
     const isExistID=entries.some(val=>val.id===editingId)
 
+    if (!ex) return;
+    if (editSet<1) return;
+    if (editReps<1) return;
     if(!isExistID) return;
+    if(weightKg==="") return
 
     setLoading(true);
     try {
@@ -450,6 +454,7 @@ getSession();
 
             <PrimaryButton
               onClick={saveEdit}
+              disabled={editExercise.trim().length === 0}
               loading={loading}
             >
               Save
