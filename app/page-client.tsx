@@ -164,7 +164,7 @@ getSession();
         weight_kg:weightKg
       })
 
-      setEntries((prev)=>[...prev,{name:res.data.name,set:res.data.set,rep:res.data.rep,weight_kg:res.data.weight_kg,}])
+      setEntries((prev)=>[...prev,{id:res.data.id,name:res.data.name,set:res.data.set,rep:res.data.rep,weight_kg:res.data.weight_kg,}])
      
     } finally {
       setLoading(false);
