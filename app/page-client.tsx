@@ -528,6 +528,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
         borderColor: "rgba(255,255,255,.10)",
         background: "rgba(255,255,255,.03)",
         color: "var(--tg-theme-text-color, #E5E7EB)",
+         fontSize: "16px"
       }}
     />
   );
