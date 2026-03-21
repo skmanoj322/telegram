@@ -152,15 +152,8 @@ getSession();
     if (!canAdd) { setShowErrors(true); return; }
 
     const name = exercise.trim();
-    const id=Date.now()
 
-    const newEntry: Entry = {
-      id,
-      name,
-      set:setNum,
-      rep:reps,
-      weight_kg:weightKg
-    };
+   
 
     setLoading(true);
     try {
@@ -170,10 +163,9 @@ getSession();
         rep:reps,
         weight_kg:weightKg
       })
-      setEntries(prev => [...prev, newEntry]);
-      setEntries((prev)=> prev.map((entrie)=>
-        entrie.id===id?{...entrie,id:res.data.id}:entrie
-      ))
+
+      setEntries((prev)=>[...prev,{name:res.data.name,set:res.data.set,rep:res.data.rep,weight_kg:res.data.weight_kg,}])
+     
     } finally {
       setLoading(false);
     }
