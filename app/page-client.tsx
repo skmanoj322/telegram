@@ -103,6 +103,8 @@ export default function Page() {
   const todayLabel = useMemo(() => fmtTodayLabel(), []);
 
   const [weightKg,setWeightKg]=useState<string|"">("")
+  const [showErrors, setShowErrors] = useState(false);
+  const [loading, setLoading] = useState(false);
   const rawInitData = useRawInitData();
 
 
@@ -139,12 +141,17 @@ getSession();
     "V Squat"
   ];
 
+  function mandatoryFieldHandler():boolean{
+    if(exercise!==""&&weightKg!==""){
+      return true
+    }
+    return false
+  }
+
  async function addEntry() {
-    if (!canAdd) return;
+    if (!canAdd) { setShowErrors(true); return; }
 
     const name = exercise.trim();
-    const now = new Date();
-  
     const id=Date.now()
 
     const newEntry: Entry = {
@@ -155,25 +162,24 @@ getSession();
       weight_kg:weightKg
     };
 
-
     setEntries(prev => [...prev, newEntry]);
-
-    // setEntries((prev)=>[newEntry,...prev,]);
-
-    const res= await post<AddLogRequest,AddLogResponse>("/add",{
-      name,
-      set:setNum,
-      rep:reps,
-      weight_kg:weightKg
-    })
-
-    console.log("res",res)
-
-    setEntries((prev)=> prev.map((entrie)=>
-      entrie.id===id?{...entrie,id:res.data.id}:entrie
+    setLoading(true);
+    try {
+      const res= await post<AddLogRequest,AddLogResponse>("/add",{
+        name,
+        set:setNum,
+        rep:reps,
+        weight_kg:weightKg
+      })
+      setEntries((prev)=> prev.map((entrie)=>
+        entrie.id===id?{...entrie,id:res.data.id}:entrie
       ))
-    // keep reps; clear exercise for quick logging
+    } finally {
+      setLoading(false);
+    }
     setExercise("");
+    setShowErrors(false);
+    setWeightKg("");
   }
 
   function openEdit(id: number|undefined) {
@@ -206,27 +212,25 @@ getSession();
     if(!isExistID) return;
     if(weightKg==="") return
 
-    await post<EditLogRequest,{status:number,data:WorkoutLog}>("/edit",{
-      id:editingId,
-      name:ex,
-      set:editSet,
-      rep:editReps,
-      weight_kg:weightKg
-    })
-
-    setEntries((prev) =>
-      prev.map((e) =>
-        e.id === editingId
-          ? {
-              ...e,
-              name: ex,
-              set: editSet,
-              rep:  editReps,
-              weight_kg:weightKg
-            }
-          : e,
-      ),
-    );
+    setLoading(true);
+    try {
+      await post<EditLogRequest,{status:number,data:WorkoutLog}>("/edit",{
+        id:editingId,
+        name:ex,
+        set:editSet,
+        rep:editReps,
+        weight_kg:weightKg
+      })
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.id === editingId
+            ? { ...e, name: ex, set: editSet, rep: editReps, weight_kg:weightKg }
+            : e,
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
     setEditOpen(false);
     setEditingId(null);
   }
@@ -242,11 +246,15 @@ getSession();
 
   async function confirmDelete() {
     if (!deletingId) return;
-    const res= await post<DeleteRequest,{status:number,data:WorkoutLog}>("/delete",{id:deletingId})
+    setLoading(true);
+    try {
+      await post<DeleteRequest,{status:number,data:WorkoutLog}>("/delete",{id:deletingId})
       setEntries((prev) => prev.filter((e) => e.id !== deletingId));
-      setDeleteOpen(false);
-      setDeletingId(null);
-  
+    } finally {
+      setLoading(false);
+    }
+    setDeleteOpen(false);
+    setDeletingId(null);
   }
 
   const deletingEntry = deletingId
@@ -319,6 +327,9 @@ getSession();
               onChange={(e) => setExercise(e.target.value)}
               placeholder="e.g., Bench Press"
             />
+            {showErrors && exercise.trim().length === 0 && (
+              <p className="mt-1 text-xs text-red-400">Exercise name is required</p>
+            )}
 
             <div className="mt-3 flex flex-wrap gap-2">
               {exerciseChips.map((c) => (
@@ -336,6 +347,9 @@ getSession();
                 setWeightKg(e.target.value)}}
               placeholder="Weight"
             />
+            {showErrors && weightKg.trim().length === 0 && (
+              <p className="mt-1 text-xs text-red-400">Weight is required</p>
+            )}
           </div>
 
           <div className="mt-4 flex gap-3">
@@ -360,7 +374,7 @@ getSession();
           </div>
 
           <div className="mt-4">
-            <PrimaryButton onClick={addEntry}>Add Entry</PrimaryButton>
+            <PrimaryButton onClick={addEntry} loading={loading}>Add Entry</PrimaryButton>
           </div>
         </SurfaceCard>
 
@@ -449,6 +463,7 @@ getSession();
             <PrimaryButton
               onClick={saveEdit}
               disabled={editExercise.trim().length === 0}
+              loading={loading}
             >
               Save
             </PrimaryButton>
@@ -476,7 +491,7 @@ getSession();
             <GhostButton onClick={() => setDeleteOpen(false)}>
               Cancel
             </GhostButton>
-            <DangerButton onClick={confirmDelete}>Delete</DangerButton>
+            <DangerButton onClick={confirmDelete} loading={loading}>Delete</DangerButton>
           </div>
         </div>
       </BottomSheet>
@@ -596,26 +611,38 @@ function Stepper({
   );
 }
 
+function Spinner() {
+  return (
+    <svg className="inline-block h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
+
 function PrimaryButton({
   children,
   disabled,
+  loading,
   onClick,
 }: {
   children: React.ReactNode;
   disabled?: boolean;
+  loading?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
-      disabled={disabled}
+      disabled={disabled || loading}
       onClick={onClick}
-      className="w-full rounded-[14px] px-4 py-3 text-sm font-extrabold active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
+      className="flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-sm font-extrabold active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
       style={{
         background: "var(--tg-theme-button-color, #3B82F6)",
         color: "var(--tg-theme-button-text-color, #FFFFFF)",
       }}
     >
+      {loading && <Spinner />}
       {children}
     </button>
   );
@@ -642,18 +669,22 @@ function GhostButton({
 
 function DangerButton({
   children,
+  loading,
   onClick,
 }: {
   children: React.ReactNode;
+  loading?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
+      disabled={loading}
       onClick={onClick}
-      className="w-full rounded-[14px] px-4 py-3 text-sm font-extrabold text-white active:translate-y-[1px]"
+      className="flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-sm font-extrabold text-white active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
       style={{ background: "#EF4444" }}
     >
+      {loading && <Spinner />}
       {children}
     </button>
   );
