@@ -176,10 +176,12 @@ getSession();
 
   function openEdit(id: number|undefined) {
 
+    console.log("EDIT ENTRIES")
+
     if (id===undefined){
       return
     }
-
+    console.log("ID",id)
    
     const e = entries.find((x) => x.id === id);
     if (!e) return;
