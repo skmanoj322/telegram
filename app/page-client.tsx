@@ -454,7 +454,7 @@ getSession();
 
             <PrimaryButton
               onClick={saveEdit}
-              disabled={editExercise.trim().length === 0}
+              // disabled={editExercise.trim().length === 0}
               loading={loading}
             >
               Save
