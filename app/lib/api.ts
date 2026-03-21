@@ -10,8 +10,6 @@ export const setInitData = (data: string) => {
     initData = data;
   };
 export async function refreshToken():Promise<boolean>{
-
-    // const initData="query_id=AAEijLVtAwAAACKMtW28vyGc&user=%7B%22id%22%3A8283065378%2C%22first_name%22%3A%22Manoj%22%2C%22last_name%22%3A%22Sk%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%2C%22photo_url%22%3A%22https%3A%5C%2F%5C%2Ft.me%5C%2Fi%5C%2Fuserpic%5C%2F320%5C%2FqfwLS-dj04hfGa5iSPrdnRcb8znV7vdGlQidQuo8B_fBfvmNZOELNfFNzmi3r6JX.svg%22%7D&auth_date=1772602505&signature=i5yfAoYyxrwvi1Zh2ctZ_Ar4HHZn1QaFYCWk2Se4Zkz3e0admJRS-5YvmTGGiD4zglthGn7DJoGl8Zalg0STCg&hash=e6cef50295f3698d242f36c43414c7c6061ad63d733e172c209365f6898b2b81"
     if (initData==undefined){
         return false
     }
@@ -31,7 +29,6 @@ export async function refreshToken():Promise<boolean>{
 
         const data:auth=await response.json();
 
-        console.log("RE_FRESH from refresh function",data)
 
         await deviceStorage.setItem("token",data.token);
 
@@ -61,7 +58,6 @@ const handleResponse=async<T>(response:Response):Promise<T>=>{
 export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):Promise<T>=>{
     let lastError:ApiError|null=null;
 
-    console.log("Token from fetchWithRetry",await deviceStorage.getItem("token"))
 
     for(let i=0;i<retries;i++){
         const res=await fetch(`${BASE_URL}${url}`,{
@@ -79,7 +75,6 @@ export const fetchWithRetry=async<T>(url:string,options:RequestInit,retries=2):P
 
             const refreshed=await refreshToken();
 
-            console.log("REFRESHED",refreshToken)
             if (!refreshed) throw error;
 
         }

@@ -129,9 +129,14 @@ getSession();
   const exerciseChips = [
     "Bench Press",
     "Squat",
-    "Deadlift",
     "Pull-up",
     "Shoulder Press",
+    "RDL",
+    "Side Press",
+    "Rowing",
+    "Lat Pull",
+    "Linear Press",
+    "V Squat"
   ];
 
  async function addEntry() {
